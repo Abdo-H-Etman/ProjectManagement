@@ -2,7 +2,7 @@ using Domain.Entities.Enums;
 
 namespace Domain.Entities.Models;
 
-public class ProjectInvitaion : BaseEntity
+public class ProjectInvitation : BaseEntity
 {
     public Guid ProjectId { get; set; }
     public required string Email { get; set; }
