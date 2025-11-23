@@ -1,10 +1,11 @@
 using API.Extensions;
 using DotNetEnv;
 
-var builder = WebApplication.CreateBuilder(args);
-
+// Load environment variables from .env before creating the WebApplicationBuilder
+// so they become part of the application's configuration sources.
 Env.Load();
 
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.AddOpenApi();
