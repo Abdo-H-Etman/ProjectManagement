@@ -6,7 +6,7 @@ public class Attachment : BaseEntity
 {
     public Guid? TaskId { get; set; }
     public Guid? ProjectId { get; set; }
-    public Guid UploadedById { get; set; }
+    public Guid? UploadedById { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string FileUrl { get; set; } = string.Empty;
     public long FileSize { get; set; }
