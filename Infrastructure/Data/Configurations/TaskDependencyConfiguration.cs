@@ -22,6 +22,6 @@ public class TaskDependencyConfiguration : IEntityTypeConfiguration<TaskDependen
         builder.HasOne(td => td.DependsOnTask)
                .WithMany(t => t.Dependents)
                .HasForeignKey(td => td.DependsOnTaskId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

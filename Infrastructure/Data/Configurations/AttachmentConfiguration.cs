@@ -19,6 +19,15 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
         builder.HasIndex(a => a.ProjectId);
         builder.HasIndex(a => a.UploadedById);
         builder.HasIndex(a => a.Type);
+
+        builder.HasOne(a => a.Task)
+               .WithMany(t => t.Attachments)
+               .HasForeignKey(a => a.TaskId)
+               .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(a => a.Project)
+               .WithMany()
+               .HasForeignKey(a => a.ProjectId)
+               .OnDelete(DeleteBehavior.Restrict);       
     }
 
 }

@@ -29,6 +29,6 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
         builder.HasOne(c => c.Project)
                 .WithMany()
                 .HasForeignKey(c => c.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
     }
 }

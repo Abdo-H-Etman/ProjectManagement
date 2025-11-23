@@ -34,6 +34,6 @@ public class TaskConfiguration : IEntityTypeConfiguration<Task>
         builder.HasMany(t => t.Attachments)
             .WithOne(a => a.Task)
             .HasForeignKey(a => a.TaskId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
