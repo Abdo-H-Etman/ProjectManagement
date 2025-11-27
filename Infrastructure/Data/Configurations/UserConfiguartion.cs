@@ -30,15 +30,15 @@ public class UserConfiguartion : IEntityTypeConfiguration<ApplicationUser>
         builder.HasMany(u => u.ProjectMemberships)
             .WithOne(pm => pm.User)
             .HasForeignKey(pm => pm.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
         builder.HasMany(u => u.AssignedTasks)
             .WithOne(t => t.AssignedTo)
             .HasForeignKey(t => t.AssignedToId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
         builder.HasMany(u => u.CreatedTasks)
             .WithOne(t => t.CreatedBy)
             .HasForeignKey(t => t.CreatedById)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
         builder.HasMany(u => u.Attachments)
             .WithOne(a => a.UploadedBy)
             .HasForeignKey(a => a.UploadedById)
@@ -46,7 +46,7 @@ public class UserConfiguartion : IEntityTypeConfiguration<ApplicationUser>
         builder.HasMany(u => u.Comments)
             .WithOne(c => c.Author)
             .HasForeignKey(c => c.AuthorId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
         builder.HasMany(u => u.TimeEntries)
             .WithOne(te => te.User)
             .HasForeignKey(te => te.UserId)

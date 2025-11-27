@@ -32,6 +32,6 @@ public class ProjectInvitationConfiguration : IEntityTypeConfiguration<ProjectIn
        builder.HasOne(pi => pi.InvitedBy)
               .WithMany()
               .HasForeignKey(pi => pi.InvitedById)
-              .OnDelete(DeleteBehavior.Cascade);
+              .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -13,14 +13,14 @@ public class Task : BaseEntity
     public DateTime? StartDate { get; set; }
     public DateTime? CompletedAt { get; set; }
     public Guid? AssignedToId { get; set; }
-    public Guid CreatedById { get; set; }
+    public Guid? CreatedById { get; set; }
     public Guid? ParentTaskId { get; set; }
     public decimal? EstimatedHours { get; set; }
     public decimal? ActualHours { get; set; }
 
     public Project Project { get; set; } = null!;
     public ApplicationUser? AssignedTo { get; set; }
-    public ApplicationUser CreatedBy { get; set; } = null!;
+    public ApplicationUser? CreatedBy { get; set; } = null!;
     public Task? ParentTask { get; set; }
     public ICollection<Task> SubTasks { get; set; } = [];
     public ICollection<Comment> Comments { get; set; } = [];

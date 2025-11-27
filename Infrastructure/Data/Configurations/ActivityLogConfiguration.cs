@@ -22,7 +22,6 @@ public class ActivityLogConfiguration : IEntityTypeConfiguration<ActivityLog>
 
         builder.HasIndex(al => al.UserId);
         builder.HasIndex(al => al.TaskId);
-        builder.HasIndex(al => al.UserId);
         builder.HasIndex(al => new {al.UserId, al.CreatedAt});
         builder.HasIndex(al => new {al.ProjectId, al.CreatedAt});
         builder.HasIndex(al => new {al.Type, al.CreatedAt});
@@ -31,7 +30,7 @@ public class ActivityLogConfiguration : IEntityTypeConfiguration<ActivityLog>
         builder.HasOne(al => al.Task)
             .WithMany()
             .HasForeignKey(al => al.TaskId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
     }
 }
