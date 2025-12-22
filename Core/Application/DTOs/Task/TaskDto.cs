@@ -1,3 +1,6 @@
+using Application.DTOs.Project;
+using Application.DTOs.User;
+
 namespace Application.DTOs.Task;
 
 public record TaskDto
@@ -12,4 +15,7 @@ public record TaskDto
     public DateTime? DueDate { get; init; }
     public bool IsDeleted { get; init; }
     public DateTime? DeletedAt { get; init; }
+    public UserDto AssignedUser { get; init; } = null!;
+    public UserDto CreatedBy { get; init; } = null!;
+    public ProjectSummaryDto Project { get; init; } = null!;
 }
