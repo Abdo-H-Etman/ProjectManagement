@@ -9,9 +9,9 @@ Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureDatabase(builder.Configuration);
+builder.Services.ConfigureIdentity();
 builder.Services.AddRepositories();
 builder.Services.AddOpenApi();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
