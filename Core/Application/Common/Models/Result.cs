@@ -1,7 +1,7 @@
 
 namespace Application.Common.Models;
 
-public class Result
+public record Result
 {
     public bool IsSuccess { get; set; }
     public string Message { get; set; } = string.Empty;
@@ -17,7 +17,7 @@ public class Result
         new() { IsSuccess = false, Message = message, Errors = errors };    
 }
 
-public class Result<T> : Result
+public record Result<T> : Result
 {
     public T? Data { get; set; }
 
