@@ -19,6 +19,7 @@ public interface IRepositoryManager : IDisposable
     IRepository<TimeEntry> TimeEntry { get; }
     IRepository<UserProfile> UserProfile { get; }
     IRepository<Webhook> Webhook { get; }
+    IRepository<RefreshToken> RefreshToken { get; }
 
     Task SaveAsync(CancellationToken cancellationToken = default);
 }
