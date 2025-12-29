@@ -20,7 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace Application.Services.Auth;
 
 public class AuthenticationService : IAuthenticationService
-{   
+{
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ICurrentUserService _currentUserService;
@@ -56,18 +56,18 @@ public class AuthenticationService : IAuthenticationService
         try
         {
             var existingUser = await _userManager.FindByEmailAsync(createUserDto.Email);
-            if(existingUser != null)
+            if (existingUser != null)
             {
                 return Result<AuthResponseDto>.Failure("Email is already registered.");
             }
 
             existingUser = await _userManager.FindByNameAsync(createUserDto.UserName);
-            if(existingUser != null)
+            if (existingUser != null)
             {
                 return Result<AuthResponseDto>.Failure("Username is already taken.");
             }
 
-            if(createUserDto.Password != createUserDto.ConfirmPassword)
+            if (createUserDto.Password != createUserDto.ConfirmPassword)
             {
                 return Result<AuthResponseDto>.Failure("Passwords do not match.");
             }
@@ -87,15 +87,20 @@ public class AuthenticationService : IAuthenticationService
                 return Result<AuthResponseDto>.Failure($"User creation failed.", errors);
             }
 
+            var createdUser = await _userManager.FindByEmailAsync(createUserDto.Email);
+            if (createdUser == null)
+            {
+                return Result<AuthResponseDto>.Failure("User was created but could not be retrieved from database.");
+            }
+
+            var authResponse = await GenerateAuthResponseDtoAsync(createdUser, ipAddress, userAgent, cancellationToken);
+
             var profile = new UserProfile
             {
                 UserId = newUser.Id,
             };
             await _repositoryManager.UserProfile.AddAsync(profile, cancellationToken);
             await _repositoryManager.SaveAsync(cancellationToken);
-
-            var authResponse = await GenerateAuthResponseDtoAsync(newUser, ipAddress, userAgent, cancellationToken);
-
 
             _logger.LogInfo("User registered successfully.");
             return Result<AuthResponseDto>.Success(authResponse, "User registered successfully.");
@@ -121,7 +126,7 @@ public class AuthenticationService : IAuthenticationService
             {
                 return Result<AuthResponseDto>.Failure("Invalid credentials.");
             }
-            
+
             if (!user.IsActive)
             {
                 return Result<AuthResponseDto>.Failure("User account is inactive.");
@@ -170,10 +175,10 @@ public class AuthenticationService : IAuthenticationService
             }
 
             var refreshToken = await _repositoryManager.RefreshToken.FirstOrDefaultAsync(
-                rt => rt.Token == tokenDto.RefreshToken && rt.UserId == userId,
+                rt => rt.Token == tokenDto.RefreshToken && rt.UserId == userId && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow,
                 cancellationToken);
 
-            if (refreshToken == null || !refreshToken.IsActive)
+            if (refreshToken == null)
             {
                 return Result<AuthResponseDto>.Failure("Invalid or expired refresh token.");
             }
@@ -186,10 +191,10 @@ public class AuthenticationService : IAuthenticationService
 
             refreshToken.IsRevoked = true;
             refreshToken.RevokedAt = DateTime.UtcNow;
-            
+
             var authResponse = await GenerateAuthResponseDtoAsync(user, ipAddress, userAgent, cancellationToken);
             refreshToken.ReplacedByToken = authResponse.RefreshToken;
-            
+
             _repositoryManager.RefreshToken.Update(refreshToken);
             await _repositoryManager.SaveAsync(cancellationToken);
 
@@ -202,19 +207,19 @@ public class AuthenticationService : IAuthenticationService
             return Result<AuthResponseDto>.Failure("Token refresh failed.");
         }
     }
-    
+
     public async Task<Result> RevokeTokenAsync(
-        string refreshToken,                
+        string refreshToken,
         string? ipAddress = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
             var token = await _repositoryManager.RefreshToken.FirstOrDefaultAsync(
-                rt => rt.Token == refreshToken,
+                rt => rt.Token == refreshToken && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow,
                 cancellationToken);
 
-            if (token == null || !token.IsActive)
+            if (token == null)
             {
                 return Result.Failure("Invalid or already revoked refresh token.");
             }
@@ -234,7 +239,7 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure("Token revocation failed.");
         }
     }
-    
+
     public async Task<Result> LogoutAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
@@ -242,7 +247,12 @@ public class AuthenticationService : IAuthenticationService
         try
         {
             var activeTokens = await _repositoryManager.RefreshToken
-                .FindAsync(rt => rt.UserId == userId && rt.IsActive, cancellationToken);
+                .FindAsync(rt => rt.UserId == userId && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow, cancellationToken);
+
+            if (!activeTokens.Any())
+            {
+                return Result.Failure("User is not currently logged in.");
+            }
 
             foreach (var token in activeTokens)
             {
@@ -259,7 +269,7 @@ public class AuthenticationService : IAuthenticationService
         catch (Exception ex)
         {
             _logger.LogError($"Error during user logout: {ex.Message}");
-            return Result.Failure("Logout failed.");
+            return Result.Failure($"Logout failed. {ex.Message}");
         }
     }
 
@@ -270,7 +280,7 @@ public class AuthenticationService : IAuthenticationService
     {
         try
         {
-            if(changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
+            if (changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
             {
                 return Result.Failure("passwords do not match.");
             }
@@ -311,14 +321,21 @@ public class AuthenticationService : IAuthenticationService
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            
-            var resetLink = $"https://yourfrontend.com/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
-            await _emailService.SendPasswordResetEmailAsync(
+
+            var resetLink = $"https://frontend.com/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+            var emailResult = await _emailService.SendPasswordResetEmailAsync(
                 user.Email!,
                 user.UserName ?? "User",
                 token,
                 resetLink,
                 cancellationToken);
+
+            if (!emailResult.IsSuccess)
+            {
+                _logger.LogError($"Failed to send password reset email to {user.Email}: {string.Join(';', emailResult.Errors)}");
+                return Result.Failure("Failed to send password reset email.", emailResult.Errors);
+            }
+
             _logger.LogInfo($"Password reset requested for user: {user.Id}.");
             return Result.Success("Password reset instructions sent to email.");
         }
@@ -335,7 +352,7 @@ public class AuthenticationService : IAuthenticationService
     {
         try
         {
-            if(resetPasswordDto.NewPassword != resetPasswordDto.ConfirmNewPassword)
+            if (resetPasswordDto.NewPassword != resetPasswordDto.ConfirmNewPassword)
             {
                 return Result.Failure("Passwords do not match.");
             }
@@ -368,23 +385,23 @@ public class AuthenticationService : IAuthenticationService
             string? ipAddress,
             string? userAgent,
             CancellationToken cancellationToken)
+    {
+        var accessToken = GenerateAccessToken(user);
+        var refreshToken = await GenerateRefreshTokenAsync(user.Id, ipAddress, userAgent, cancellationToken);
+
+        var profile = await _repositoryManager.UserProfile.FirstOrDefaultAsync(
+            p => p.UserId == user.Id,
+            cancellationToken);
+
+        return new AuthResponseDto
         {
-            var accessToken = GenerateAccessToken(user);
-            var refreshToken = await GenerateRefreshTokenAsync(user.Id, ipAddress, userAgent, cancellationToken);
+            AccessToken = accessToken,
+            RefreshToken = refreshToken.Token,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
+            User = MapToUserResponse(user, profile)
+        };
+    }
 
-            var profile = await _repositoryManager.UserProfile.FirstOrDefaultAsync(
-                p => p.UserId == user.Id,
-                cancellationToken);
-
-            return new AuthResponseDto
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken.Token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
-                User = MapToUserResponse(user, profile)
-            };
-        }
-    
     private string GenerateAccessToken(ApplicationUser user)
     {
         var claims = new[]
@@ -415,19 +432,37 @@ public class AuthenticationService : IAuthenticationService
         string? userAgent,
         CancellationToken cancellationToken)
     {
-        var refreshToken = new RefreshToken
+        try
         {
-            UserId = userId,
-            Token = GenerateRefreshTokenString(),
-            ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationInDays),
-            IpAddress = ipAddress,
-            UserAgent = userAgent
-        };
+            var refreshToken = new RefreshToken
+            {
+                UserId = userId,
+                Token = GenerateRefreshTokenString(),
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationInDays),
+                IpAddress = ipAddress,
+                UserAgent = userAgent
+            };
 
-        await _repositoryManager.RefreshToken.AddAsync(refreshToken, cancellationToken);
-        await _repositoryManager.SaveAsync(cancellationToken);
+            var previousTokens = await _repositoryManager.RefreshToken
+                .FindAsync(rt => rt.UserId == userId && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow, cancellationToken);
+            foreach (var token in previousTokens)
+            {
+                token.IsRevoked = true;
+                token.RevokedAt = DateTime.UtcNow;
+                token.ReplacedByToken = refreshToken.Token;
+                _repositoryManager.RefreshToken.Update(token);
+            }
+            await _repositoryManager.RefreshToken.AddAsync(refreshToken, cancellationToken);
+            await _repositoryManager.SaveAsync(cancellationToken);
 
-        return refreshToken;
+            return refreshToken;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error generating refresh token: {ex.Message}");
+            _logger.LogError($"Stack trace: {ex.StackTrace}");
+            throw;
+        }
     }
 
     private string GenerateRefreshTokenString()
@@ -513,6 +548,7 @@ public class AuthenticationService : IAuthenticationService
         return new UserDto
         {
             Id = user.Id,
+            FullName = $"{user.FirstName} {user.LastName}",
             UserName = user.UserName ?? "",
             Email = user.Email ?? "",
             AvatarUrl = profile?.AvatarUrl,
