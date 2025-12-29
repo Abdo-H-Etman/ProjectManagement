@@ -1,4 +1,3 @@
-using System;
 using Application.DTOs.User;
 
 namespace Application.DTOs.Auth;

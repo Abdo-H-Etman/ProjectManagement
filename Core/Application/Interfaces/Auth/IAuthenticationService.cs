@@ -1,4 +1,3 @@
-using System;
 using Application.Common.Models;
 using Application.DTOs.Auth;
 using Application.DTOs.User;

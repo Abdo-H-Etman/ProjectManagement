@@ -1,4 +1,3 @@
-using System;
 
 namespace Application.Common.Models;
 

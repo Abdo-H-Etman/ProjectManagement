@@ -1,4 +1,3 @@
-using System;
 using Application.Interfaces.Logging;
 using NLog;
 namespace Application.Services.Logging;

@@ -1,4 +1,3 @@
-using System;
 using Application.Common.Models.Interfaces;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Logging;

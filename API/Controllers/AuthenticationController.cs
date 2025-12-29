@@ -1,4 +1,3 @@
-using System;
 using System.Security.Claims;
 using Application.DTOs.Auth;
 using Application.DTOs.User;
@@ -107,7 +106,7 @@ public class AuthenticationController : ControllerBase
 
         if (!result.IsSuccess)
             return BadRequest(result);
-            
+
         return Ok(result);
     }
 
