@@ -31,6 +31,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<ProjectInvitation> ProjectInvitations { get; set; }
     public DbSet<Webhook> Webhooks { get; set; }
     public DbSet<ApiKey> ApiKeys { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

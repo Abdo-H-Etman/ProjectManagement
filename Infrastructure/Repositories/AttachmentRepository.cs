@@ -1,4 +1,3 @@
-using System;
 using Domain.Entities.Enums;
 using Domain.Entities.Models;
 using Domain.Interfaces;

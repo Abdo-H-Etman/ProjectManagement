@@ -1,3 +1,4 @@
+using Domain.Entities.Models;
 using Domain.Interfaces;
 using Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,5 +17,12 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<IRepository<RefreshToken>, Repository<RefreshToken>>();
+        services.AddScoped<IRepository<ApiKey>, Repository<ApiKey>>();
+        services.AddScoped<IRepository<CheckListItem>, Repository<CheckListItem>>();
+        services.AddScoped<IRepository<ProjectInvitation>, Repository<ProjectInvitation>>();
+        services.AddScoped<IRepository<Tag>, Repository<Tag>>();
+        services.AddScoped<IRepository<TimeEntry>, Repository<TimeEntry>>();
+        services.AddScoped<IRepository<UserProfile>, Repository<UserProfile>>();
     }
 }

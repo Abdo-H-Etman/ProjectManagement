@@ -31,6 +31,7 @@ public class RepostoryManager : IRepositoryManager
     public IRepository<TimeEntry> TimeEntry => _serviceProvider.GetRequiredService<IRepository<TimeEntry>>();
     public IRepository<UserProfile> UserProfile => _serviceProvider.GetRequiredService<IRepository<UserProfile>>();
     public IRepository<Webhook> Webhook => _serviceProvider.GetRequiredService<IRepository<Webhook>>();
+    public IRepository<RefreshToken> RefreshToken => _serviceProvider.GetRequiredService<IRepository<RefreshToken>>();
     public async Task SaveAsync(CancellationToken cancellationToken = default) =>
         await _context.SaveChangesAsync(cancellationToken);
     public void Dispose() => _context.Dispose();
