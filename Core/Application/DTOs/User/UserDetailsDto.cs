@@ -9,5 +9,6 @@ public record UserDetailsDto : UserDto
     public DateTime? LastLoginAt { get; init; }
     public string TimeZone { get; init; } = null!;
     public bool IsActive { get; init; }
+    public UserProfileDto? Profile { get; init; }
     public IEnumerable<ProjectSummaryDto> Projects { get; init; } = [];
 }

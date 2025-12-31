@@ -143,7 +143,7 @@ public class AuthenticationService : IAuthenticationService
             }
 
             var authResponse = await GenerateAuthResponseDtoAsync(user, ipAddress, userAgent, cancellationToken);
-
+            user.LastLoginAt = DateTime.UtcNow;
             _logger.LogInfo("User logged in successfully.");
             return Result<AuthResponseDto>.Success(authResponse, "User logged in successfully.");
         }
@@ -253,7 +253,7 @@ public class AuthenticationService : IAuthenticationService
             {
                 return Result.Failure("User is not currently logged in.");
             }
-
+            
             foreach (var token in activeTokens)
             {
                 token.IsRevoked = true;
@@ -262,6 +262,12 @@ public class AuthenticationService : IAuthenticationService
             }
 
             await _repositoryManager.SaveAsync(cancellationToken);
+
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user != null)
+            {
+                await _userManager.UpdateSecurityStampAsync(user);
+            }
 
             _logger.LogInfo($"User {userId} logged out successfully.");
             return Result.Success("User logged out successfully.");
@@ -409,6 +415,7 @@ public class AuthenticationService : IAuthenticationService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.UserName ?? ""),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
+            new Claim("SecurityStamp", user.SecurityStamp ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

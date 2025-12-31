@@ -11,6 +11,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IRepositoryManager, RepostoryManager>();
         services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
+        services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
@@ -23,6 +24,5 @@ public static class DependencyInjection
         services.AddScoped<IRepository<ProjectInvitation>, Repository<ProjectInvitation>>();
         services.AddScoped<IRepository<Tag>, Repository<Tag>>();
         services.AddScoped<IRepository<TimeEntry>, Repository<TimeEntry>>();
-        services.AddScoped<IRepository<UserProfile>, Repository<UserProfile>>();
     }
 }
