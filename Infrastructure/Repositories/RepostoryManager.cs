@@ -29,7 +29,7 @@ public class RepostoryManager : IRepositoryManager
     public IRepository<ProjectInvitation> ProjectInvitation => _serviceProvider.GetRequiredService<IRepository<ProjectInvitation>>();
     public IRepository<Tag> Tag => _serviceProvider.GetRequiredService<IRepository<Tag>>();
     public IRepository<TimeEntry> TimeEntry => _serviceProvider.GetRequiredService<IRepository<TimeEntry>>();
-    public IRepository<UserProfile> UserProfile => _serviceProvider.GetRequiredService<IRepository<UserProfile>>();
+    public IUserProfileRepository UserProfile => _serviceProvider.GetRequiredService<IUserProfileRepository>();
     public IRepository<Webhook> Webhook => _serviceProvider.GetRequiredService<IRepository<Webhook>>();
     public IRepository<RefreshToken> RefreshToken => _serviceProvider.GetRequiredService<IRepository<RefreshToken>>();
     public async Task SaveAsync(CancellationToken cancellationToken = default) =>

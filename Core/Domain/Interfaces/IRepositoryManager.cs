@@ -17,7 +17,7 @@ public interface IRepositoryManager : IDisposable
     IRepository<ProjectInvitation> ProjectInvitation { get; }
     IRepository<Tag> Tag { get; }
     IRepository<TimeEntry> TimeEntry { get; }
-    IRepository<UserProfile> UserProfile { get; }
+    IUserProfileRepository UserProfile { get; }
     IRepository<Webhook> Webhook { get; }
     IRepository<RefreshToken> RefreshToken { get; }
 
