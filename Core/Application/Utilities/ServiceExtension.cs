@@ -1,4 +1,5 @@
 using Application.Common.Models.Interfaces;
+using Application.Interfaces;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Logging;
 using Application.Interfaces.Mailing;
@@ -20,5 +21,6 @@ public static class ServiceExtension
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<ILoggerManager, LoggerManager>();
+        services.AddScoped<IUserService, UserService>();
     }
 }
