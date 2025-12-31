@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Application.Common.Settings;
 using Application.Utilities;
@@ -7,6 +8,7 @@ using Infrastructure.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Extensions;
@@ -51,11 +53,11 @@ public static class ServiceExtensions
 
     public static void ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtSecrestKey = Environment.GetEnvironmentVariable("JwtSettings_SECRET_KEY") 
+        var jwtSecrestKey = Environment.GetEnvironmentVariable("JwtSettings_SECRET_KEY")
                 ?? throw new InvalidOperationException("JWT Secret Key is not configured.");
-        var jwtIssuer = Environment.GetEnvironmentVariable("JwtSettings_ISSUER") 
+        var jwtIssuer = Environment.GetEnvironmentVariable("JwtSettings_ISSUER")
                 ?? throw new InvalidOperationException("JWT Issuer is not configured.");
-        var jwtAudience = Environment.GetEnvironmentVariable("JwtSettings_AUDIENCE") 
+        var jwtAudience = Environment.GetEnvironmentVariable("JwtSettings_AUDIENCE")
                 ?? throw new InvalidOperationException("JWT Audience is not configured.");
         var jwtExpirationInMinutes = int.Parse(Environment.GetEnvironmentVariable("JwtSettings_EXPIRATION_MINUTES") ?? "60");
         var jwtRefreshTokenExpirationInDays = int.Parse(Environment.GetEnvironmentVariable("JwtSettings_REFRESH_TOKEN_EXPIRATION_DAYS") ?? "7");
@@ -74,7 +76,7 @@ public static class ServiceExtensions
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
-        .AddJwtBearer("Bearer", options =>
+        .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
@@ -86,6 +88,36 @@ public static class ServiceExtensions
                 ValidAudience = jwtAudience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+                    var claimsIdentity = context.Principal?.Identity as ClaimsIdentity;
+
+                    var securityStamp = claimsIdentity?.FindFirst("SecurityStamp")?.Value;
+                    var userId = claimsIdentity?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                    if (string.IsNullOrEmpty(securityStamp) || string.IsNullOrEmpty(userId))
+                    {
+                        context.Fail("Token is missing required security claims.");
+                        return;
+                    }
+
+                    var user = await userManager.FindByIdAsync(userId);
+
+                    if (user == null)
+                    {
+                        context.Fail("User not found.");
+                        return;
+                    }
+
+                    if (user.SecurityStamp != securityStamp)
+                    {
+                        context.Fail("Token is invalid (Security Stamp mismatch).");
+                    }
+                }
             };
         });
 
@@ -106,8 +138,8 @@ public static class ServiceExtensions
             options.Username = Environment.GetEnvironmentVariable("Email_USERNAME") ?? string.Empty;
             options.Password = Environment.GetEnvironmentVariable("Email_PASSWORD") ?? string.Empty;
             options.EnableSsl = bool.Parse(Environment.GetEnvironmentVariable("Email_ENABLE_SSL") ?? "true");
-            options.UseDefaultCredentials = bool.Parse(Environment.GetEnvironmentVariable("Email_USE_DEFAULT_CREDENTIALS") ?? "false");        
+            options.UseDefaultCredentials = bool.Parse(Environment.GetEnvironmentVariable("Email_USE_DEFAULT_CREDENTIALS") ?? "false");
         });
     }
-    
+
 }
