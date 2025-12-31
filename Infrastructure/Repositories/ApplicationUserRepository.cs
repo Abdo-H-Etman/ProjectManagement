@@ -17,7 +17,7 @@ public class ApplicationUserRepository : IApplicationUserRepository
     }
 
     public async Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
-        await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
     public async Task<ApplicationUser?> GetByIdWithProfileAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Users
@@ -50,5 +50,5 @@ public class ApplicationUserRepository : IApplicationUserRepository
         _context.Users.Update(user);
 
     public void Delete(ApplicationUser user) =>
-        _context.Users.Remove(user);    
+        _context.Users.Remove(user);
 }
