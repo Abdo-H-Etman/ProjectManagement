@@ -11,6 +11,8 @@ public class UserConfiguartion : IEntityTypeConfiguration<ApplicationUser>
     {
         builder.ToTable("users");
 
+        builder.Property(u => u.Email).HasMaxLength(255).IsRequired();
+        builder.Property(u => u.UserName).HasMaxLength(100).IsRequired();
         builder.Property(u => u.FirstName).HasMaxLength(100);
         builder.Property(u => u.LastName).HasMaxLength(100);
 

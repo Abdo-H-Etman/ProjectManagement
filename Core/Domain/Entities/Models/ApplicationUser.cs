@@ -9,8 +9,10 @@ public class ApplicationUser : IdentityUser<Guid>
     public bool IsActive { get; set; } = true;
     public DateTime LastLoginAt { get; set; }
     public string TimeZone { get; set; } = "UTC";
+    public bool IsDeleted { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? DeletedAt { get; set; }
 
     public UserProfile? UserProfile { get; set; }
     public ICollection<Project> OwnedProjects { get; set; } = [];
