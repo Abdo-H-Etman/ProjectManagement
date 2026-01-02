@@ -59,7 +59,7 @@ public class UserService : IUserService
     {
         try
         {
-            var user = await _repository.User.GetByIdAsync(
+            var user = await _repository.User.GetByIdWithProfileAsync(
                 userId,
                 cancellationToken
             );
