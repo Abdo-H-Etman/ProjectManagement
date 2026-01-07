@@ -18,10 +18,11 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<IProjectInvitationRepository, ProjectInvitationRepository>();
+        services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
         services.AddScoped<IRepository<RefreshToken>, Repository<RefreshToken>>();
         services.AddScoped<IRepository<ApiKey>, Repository<ApiKey>>();
         services.AddScoped<IRepository<CheckListItem>, Repository<CheckListItem>>();
-        services.AddScoped<IRepository<ProjectInvitation>, Repository<ProjectInvitation>>();
         services.AddScoped<IRepository<Tag>, Repository<Tag>>();
         services.AddScoped<IRepository<TimeEntry>, Repository<TimeEntry>>();
     }

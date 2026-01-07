@@ -12,9 +12,10 @@ public interface IRepositoryManager : IDisposable
     INotificationRepository Notification { get; }
     IAttachmentRepository Attachment { get; }
     ICommentRepository Comment { get; }
+    IProjectInvitationRepository ProjectInvitation { get; }
+    IProjectMemberRepository ProjectMember { get; }
     IRepository<ApiKey> ApiKey { get; }
     IRepository<CheckListItem> CheckListItem { get; }
-    IRepository<ProjectInvitation> ProjectInvitation { get; }
     IRepository<Tag> Tag { get; }
     IRepository<TimeEntry> TimeEntry { get; }
     IUserProfileRepository UserProfile { get; }
