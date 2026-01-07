@@ -26,5 +26,17 @@ public interface IEmailService
         string userName,
         string resetToken,
         string resetLink,
-        CancellationToken cancellationToken = default);    
+        CancellationToken cancellationToken = default);
+
+    Task<Result> SendWelcomeEmailAsync(
+            string email,
+            string Name,
+            CancellationToken cancellationToken = default);
+
+    Task<Result> SendProjectInvitationAsync(
+            string email,
+            string projectName,
+            string inviterName,
+            string invitationLink,
+            CancellationToken cancellationToken = default);        
 }
