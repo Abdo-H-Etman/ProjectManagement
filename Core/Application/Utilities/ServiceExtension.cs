@@ -22,5 +22,6 @@ public static class ServiceExtension
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<ILoggerManager, LoggerManager>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IProjectService, ProjectService>();
     }
 }

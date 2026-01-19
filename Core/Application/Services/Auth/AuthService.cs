@@ -101,7 +101,10 @@ public class AuthenticationService : IAuthenticationService
             };
             await _repositoryManager.UserProfile.AddAsync(profile, cancellationToken);
             await _repositoryManager.SaveAsync(cancellationToken);
-
+            await _emailService.SendWelcomeEmailAsync(
+                newUser.Email,
+                $"{newUser.FirstName} {newUser.LastName}",
+                cancellationToken);
             _logger.LogInfo("User registered successfully.");
             return Result<AuthResponseDto>.Success(authResponse, "User registered successfully.");
         }

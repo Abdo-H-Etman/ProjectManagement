@@ -24,9 +24,10 @@ public class RepostoryManager : IRepositoryManager
     public INotificationRepository Notification => _serviceProvider.GetRequiredService<INotificationRepository>();
     public IAttachmentRepository Attachment => _serviceProvider.GetRequiredService<IAttachmentRepository>();
     public ICommentRepository Comment => _serviceProvider.GetRequiredService<ICommentRepository>();
+    public IProjectInvitationRepository ProjectInvitation => _serviceProvider.GetRequiredService<IProjectInvitationRepository>();
+    public IProjectMemberRepository ProjectMember => _serviceProvider.GetRequiredService<IProjectMemberRepository>();
     public IRepository<ApiKey> ApiKey => _serviceProvider.GetRequiredService<IRepository<ApiKey>>();
     public IRepository<CheckListItem> CheckListItem => _serviceProvider.GetRequiredService<IRepository<CheckListItem>>();
-    public IRepository<ProjectInvitation> ProjectInvitation => _serviceProvider.GetRequiredService<IRepository<ProjectInvitation>>();
     public IRepository<Tag> Tag => _serviceProvider.GetRequiredService<IRepository<Tag>>();
     public IRepository<TimeEntry> TimeEntry => _serviceProvider.GetRequiredService<IRepository<TimeEntry>>();
     public IUserProfileRepository UserProfile => _serviceProvider.GetRequiredService<IUserProfileRepository>();
