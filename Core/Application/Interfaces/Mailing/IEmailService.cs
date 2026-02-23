@@ -38,5 +38,15 @@ public interface IEmailService
             string projectName,
             string inviterName,
             string invitationLink,
+            CancellationToken cancellationToken = default);
+
+    Task<Result> SendTaskAssignmentEmailAsync(
+            string toEmail,
+            string toName,
+            string taskName,
+            string projectName,
+            string assignedByName,
+            string taskLink,
+            DateTime? dueDate,
             CancellationToken cancellationToken = default);        
 }
