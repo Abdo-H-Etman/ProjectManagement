@@ -5,9 +5,11 @@ namespace Application.DTOs.Task;
 
 public record CreateTaskDto
 {
+    public Guid ProjectId { get; init; }
+    public Guid? ParentTaskId { get; init; }
     public string Title { get; init; } = string.Empty;
     public string? Description { get; init; }
-    public TaskStatus Status { get; init; } = TaskStatus.Pending;
-    public TaskPriority Priority { get; init; } = TaskPriority.Medium;
+    public string Status { get; init; } = TaskStatus.Pending.ToString();
+    public string Priority { get; init; } = TaskPriority.Medium.ToString();
     public DateTime? DueDate { get; init; }
 }
