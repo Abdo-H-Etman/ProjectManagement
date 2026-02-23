@@ -15,6 +15,7 @@ public class TaskRepository : Repository<Task>, ITaskRepository
 
     public async Task<Task?> GetTaskWithDetailsAsync(Guid taskId, CancellationToken cancellationToken = default) =>
         await _dbSet
+            .Include(t => t.Project)
             .Include(t => t.CreatedBy)
             .Include(t => t.AssignedTo)
             .Include(t => t.ParentTask)
