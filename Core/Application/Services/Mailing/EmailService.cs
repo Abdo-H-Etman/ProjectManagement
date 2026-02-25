@@ -300,4 +300,57 @@ public class EmailService : IEmailService
             cancellationToken: cancellationToken);
     }
 
+    public async Task<Result> SendTaskAssignmentEmailAsync(
+        string toEmail,
+        string toName,
+        string taskName,
+        string projectName,
+        string assignedByName,
+        string taskLink,
+        DateTime? dueDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var subject = $"New Task Assigned: {taskName}";
+        
+        var dueDateInfo = dueDate.HasValue ? $"<p><strong>Due Date:</strong> {dueDate.Value.ToString("MMMM dd, yyyy")}</p>" : "";
+        var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .button {{ display: inline-block; background: #43cea2; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+        .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 20px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🆕 New Task Assigned</h1>
+        </div>
+        <div class='content'>
+            <h2>Hi {toName},</h2>
+            <p>You have been assigned a new task in the project <strong>{projectName}</strong> by <strong>{assignedByName}</strong>.</p>
+            
+            <h3>Task Details:</h3>
+            <p><strong>Task Name:</strong> {taskName}</p>
+            {dueDateInfo}
+            
+            <p>Click the button below to view the task and get started:</p>
+            
+            <a href='{taskLink}' class='button'>View Task</a>
+        </div>
+        <div class='footer'>
+            <p>© 2024 Project Management System. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+        return await SendEmailAsync(toEmail, subject, body, true, cancellationToken);
+    }
+
 }

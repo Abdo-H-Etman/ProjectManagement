@@ -19,7 +19,6 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
     public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _dbSet
-            .AsNoTracking()
             .Where(e => !e.IsDeleted && e.Id == id)
             .FirstOrDefaultAsync(cancellationToken);
 

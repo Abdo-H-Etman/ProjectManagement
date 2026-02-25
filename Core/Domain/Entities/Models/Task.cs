@@ -13,6 +13,7 @@ public class Task : BaseEntity
     public DateTime? StartDate { get; set; }
     public DateTime? CompletedAt { get; set; }
     public Guid? AssignedToId { get; set; }
+    public DateTime? AssignedAt { get; set; }
     public Guid? CreatedById { get; set; }
     public Guid? ParentTaskId { get; set; }
     public decimal? EstimatedHours { get; set; }
@@ -30,4 +31,11 @@ public class Task : BaseEntity
     public ICollection<CheckListItem> CheckListItems { get; set; } = [];
     public ICollection<TaskDependency> Dependencies { get; set; } = [];
     public ICollection<TaskDependency> Dependents { get; set; } = [];
+
+    // public void AssigneTo(Guid userId)
+    // {
+    //     AssignedToId = userId;
+    //     AssignedAt = DateTime.UtcNow;
+    //     UpdatedAt = DateTime.UtcNow;
+    // }
 }

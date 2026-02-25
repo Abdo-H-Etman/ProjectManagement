@@ -23,5 +23,6 @@ public static class ServiceExtension
         services.AddSingleton<ILoggerManager, LoggerManager>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<ITaskService, TaskService>();
     }
 }
