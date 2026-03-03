@@ -21,7 +21,8 @@ public class ProjectService : IProjectService
     private readonly ILoggerManager _logger;
     private readonly ICurrentUserService _currentUserService;
     private readonly IEmailService _emailService;
-    public ProjectService(IRepositoryManager repositoryManager, ILoggerManager logger, ICurrentUserService currentUserService, IEmailService emailService)
+    public ProjectService(IRepositoryManager repositoryManager,ILoggerManager logger,
+                          ICurrentUserService currentUserService, IEmailService emailService)
     {
         _repositoryManager = repositoryManager;
         _logger = logger;
@@ -38,6 +39,7 @@ public class ProjectService : IProjectService
             var project = await _repositoryManager.Project.GetProjectWithDetailsAsync(projectId, cancellationToken);
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result<ProjectListDto>.Failure("Project not found.");
             }
 
@@ -61,12 +63,12 @@ public class ProjectService : IProjectService
                     UserName = project.Owner.UserName!
                 },
             };
-
+            _logger.LogInfo("Retrieved project with ID {projectId}", projectId);
             return Result<ProjectListDto>.Success(projectDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in GetProjectByIdAsync: {ex.Message}");
+            _logger.LogError("Error in GetProjectByIdAsync: {message}", ex.Message);
             return Result<ProjectListDto>.Failure($"An error occurred while retrieving the project");
         }
     }
@@ -96,12 +98,12 @@ public class ProjectService : IProjectService
                     UserName = project.Owner.UserName!
                 },
             });
-
+            _logger.LogInfo("User with ID {userId} retrieved {count} projects", _currentUserService.UserId, projectDtos.Count());
             return Result<IEnumerable<ProjectListDto>>.Success(projectDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in GetAllProjectsAsync: {ex.Message}");
+            _logger.LogError("Error in GetAllProjectsAsync: {message}", ex.Message);
             return Result<IEnumerable<ProjectListDto>>.Failure($"An error occurred while retrieving projects");
         }
     }
@@ -115,6 +117,7 @@ public class ProjectService : IProjectService
             var project = await _repositoryManager.Project.GetProjectWithDetailsAsync(projectId, cancellationToken);
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result<ProjectDetailsDto>.Failure("Project not found.");
             }
 
@@ -122,6 +125,8 @@ public class ProjectService : IProjectService
             var isProjectMember = await IsUserProjectMemberAsync(projectId, currentUserId, cancellationToken);
             if (!isProjectMember.IsSuccess)
             {
+                _logger.LogError("Error User with ID {userId} is not a member of project ID {projectId}",
+                    currentUserId, projectId);
                 return Result<ProjectDetailsDto>.Failure("Access denied. User is not a member of the project.");
             }
 
@@ -171,11 +176,12 @@ public class ProjectService : IProjectService
                     })]
             };
 
+            _logger.LogInfo("Retrieved details for project ID {projectId}", projectId);
             return Result<ProjectDetailsDto>.Success(projectDetailsDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in GetProjectDetailsByIdAsync: {ex.Message}");
+            _logger.LogError("Error in GetProjectDetailsByIdAsync: {message}", ex.Message);
             return Result<ProjectDetailsDto>.Failure($"An error occurred while retrieving the project details");
         }
     }
@@ -213,12 +219,12 @@ public class ProjectService : IProjectService
                     UserName = project.Owner.UserName!
                 },
             });
-
+            _logger.LogInfo("Retrieved {count} projects for user ID {userId}", projectDtos.Count(), userId);
             return Result<IEnumerable<ProjectListDto>>.Success(projectDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in GetUserProjectsAsync: {ex.Message}");
+            _logger.LogError("Error in GetUserProjectsAsync: {message}", ex.Message);
             return Result<IEnumerable<ProjectListDto>>.Failure($"An error occurred while retrieving user projects");
         }
     }
@@ -232,17 +238,18 @@ public class ProjectService : IProjectService
             var project = await _repositoryManager.Project.GetByIdAsync(projectId, cancellationToken);
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result<ProjectStatistics>.Failure("Project not found.");
             }
 
             var projectStatistics = await _repositoryManager.Project.GetProjectStatisticsAsync(projectId, cancellationToken);
 
-
+            _logger.LogInfo("Retrieved statistics for project ID {@projectId}", projectId);
             return Result<ProjectStatistics>.Success(projectStatistics);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in GetProjectStatisticsAsync: {ex.Message}");
+            _logger.LogError("Error in GetProjectStatisticsAsync: {message}", ex.Message);
             return Result<ProjectStatistics>.Failure($"An error occurred while retrieving project statistics");
         }
     }
@@ -257,6 +264,7 @@ public class ProjectService : IProjectService
             var project = await _repositoryManager.Project.GetByIdAsync(projectId, cancellationToken);
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result<ProjectListDto>.Failure("Project not found.");
             }
 
@@ -290,11 +298,12 @@ public class ProjectService : IProjectService
                 },
             };
 
+            _logger.LogInfo("Updated project with ID {@projectId}", projectId);
             return Result<ProjectListDto>.Success(projectDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in UpdateProjectAsync: {ex.Message}");
+            _logger.LogError("Error in UpdateProjectAsync: {message}", ex.Message);
             return Result<ProjectListDto>.Failure($"An error occurred while updating the project");
         }
     }
@@ -308,17 +317,19 @@ public class ProjectService : IProjectService
             var project = await _repositoryManager.Project.GetByIdAsync(projectId, cancellationToken);
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result.Failure("Project not found.");
             }
 
             _repositoryManager.Project.SoftDelete(project);
             await _repositoryManager.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("Deleted project with ID {@projectId}", projectId);
             return Result.Success("Project deleted successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in DeleteProjectAsync: {ex.Message}");
+            _logger.LogError("Error in DeleteProjectAsync: {message}", ex.Message);
             return Result.Failure("An error occurred while deleting the project.");
         }
     }
@@ -357,11 +368,12 @@ public class ProjectService : IProjectService
                 },
             });
 
+            _logger.LogInfo("Retrieved {count} archived projects for user ID {userId}", projectDtos.Count(), userId);
             return Result<IEnumerable<ProjectListDto>>.Success(projectDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in GetArchivedProjectsAsync: {ex.Message}");
+            _logger.LogError("Error in GetArchivedProjectsAsync: {message}", ex.Message);
             return Result<IEnumerable<ProjectListDto>>.Failure($"An error occurred while retrieving archived projects");
         }
     }
@@ -423,11 +435,13 @@ public class ProjectService : IProjectService
                 },
             };
 
+            _logger.LogInfo("Project created successfully: {name} (ID: {Id}) by User ID: {ownerId}",
+                project.Name, project.Id, ownerId);
             return Result<ProjectListDto>.Success(projectDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in CreateProjectAsync: {ex.Message}");
+            _logger.LogError("Error in CreateProjectAsync: {message}", ex.Message);
             return Result<ProjectListDto>.Failure($"An error occurred while creating the project {ex.Message}");
         }
     }
@@ -461,11 +475,13 @@ public class ProjectService : IProjectService
                 },
             });
 
+            _logger.LogInfo("User with ID {userId} searched for projects with term '{searchTerm}' and found {count} results",
+                userId, searchTerm, projectDtos.Count());
             return Result<IEnumerable<ProjectListDto>>.Success(projectDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in SearchProjectsAsync: {ex.Message}");
+            _logger.LogError("Error in SearchProjectsAsync: {message}", ex.Message);
             return Result<IEnumerable<ProjectListDto>>.Failure($"An error occurred while searching projects");
         }
     }
@@ -482,7 +498,7 @@ public class ProjectService : IProjectService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in IsUserProjectMemberAsync: {ex.Message}");
+            _logger.LogError("Error in IsUserProjectMemberAsync: {message}", ex.Message);
             return Result<bool>.Failure("An error occurred while checking project membership.");
         }
     }
@@ -497,6 +513,7 @@ public class ProjectService : IProjectService
             var project = _repositoryManager.Project.GetByIdAsync(projectId, cancellationToken).Result;
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result.Failure("Project not found.") ;
             }
 
@@ -524,11 +541,13 @@ public class ProjectService : IProjectService
                 invitationLink,
                 cancellationToken);
 
+            _logger.LogInfo("Project invitation sent to {email} for project ID {projectId} by user ID {inviterId}",
+                invitationDto.Email, projectId, inviterId);
             return Result.Success("Invitation sent successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in SendProjectInvitationAsync: {ex.Message}");
+            _logger.LogError("Error in SendProjectInvitationAsync: {message}", ex.Message);
             return Result.Failure($"An error occurred while sending the project invitation. {ex.Message}");
         }
     }
@@ -542,6 +561,7 @@ public class ProjectService : IProjectService
             var invitation = await _repositoryManager.ProjectInvitation.GetByTokenAsync(token, cancellationToken);
             if (invitation == null || invitation.ExpiresAt < DateTime.UtcNow)
             {
+                _logger.LogWarn("Invalid or expired invitation token");
                 return Result.Failure("Invalid or expired invitation token.");
             }
 
@@ -564,11 +584,13 @@ public class ProjectService : IProjectService
 
             await _repositoryManager.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("User with ID {userId} accepted invitation to project ID {projectId} from inviter ID {inviterId}",
+                userId, invitation.ProjectId, inviterId);
             return Result.Success("Invitation accepted successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in AcceptProjectInvitationAsync: {ex.Message}");
+            _logger.LogError("Error in AcceptProjectInvitationAsync: {message}", ex.Message);
             return Result.Failure($"An error occurred while accepting the project invitation. {ex.Message}");
         }
     }
@@ -582,6 +604,7 @@ public class ProjectService : IProjectService
             var project = await _repositoryManager.Project.GetByIdAsync(projectId, cancellationToken);
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result.Failure("Project not found.");
             }
 
@@ -589,11 +612,12 @@ public class ProjectService : IProjectService
             _repositoryManager.Project.Update(project);
             await _repositoryManager.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("Project with ID {projectId} archived successfully.", projectId);
             return Result.Success("Project archived successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in ArchiveProjectAsync: {ex.Message}");
+            _logger.LogError("Error in ArchiveProjectAsync: {message}", ex.Message);
             return Result.Failure("An error occurred while archiving the project.");
         }
     }
@@ -614,11 +638,12 @@ public class ProjectService : IProjectService
             _repositoryManager.Project.UpdateRange(projects);
             await _repositoryManager.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("Archived {count} projects successfully.", projects.Count());
             return Result.Success("Projects archived successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in ArchiveProjects: {ex.Message}");
+            _logger.LogError("Error in ArchiveProjects: {message}", ex.Message);
             return Result.Failure("An error occurred while archiving the projects.");
         }
     }
@@ -631,6 +656,7 @@ public class ProjectService : IProjectService
             var project = await _repositoryManager.Project.GetByIdAsync(projectId, cancellationToken);
             if (project == null)
             {
+                _logger.LogWarn("Project with ID {projectId} not found.", projectId);
                 return Result.Failure("Project not found.");
             }
 
@@ -638,11 +664,12 @@ public class ProjectService : IProjectService
             _repositoryManager.Project.Update(project);
             await _repositoryManager.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("Project with ID {projectId} restored successfully.", projectId);
             return Result.Success("Project restored successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in RestoreProjectAsync: {ex.Message}");
+            _logger.LogError("Error in RestoreProjectAsync: {message}", ex.Message);
             return Result.Failure("An error occurred while restoring the project.");
         }
     }

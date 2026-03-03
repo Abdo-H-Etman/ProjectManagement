@@ -1,4 +1,3 @@
-
 using Application.Common.Models;
 using Application.DTOs.Project;
 using Application.DTOs.User;
@@ -32,6 +31,7 @@ public class UserService : IUserService
 
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result<UserDto>.Failure("User not found.");
             }
 
@@ -44,11 +44,12 @@ public class UserService : IUserService
                 AvatarUrl = user.UserProfile?.AvatarUrl
             };
 
+            _logger.LogInfo("User with ID {userId} retrieved successfully.", userId);
             return Result<UserDto>.Success(userDto, "User retrieved successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(GetUserAsync)}: {ex.Message}");
+            _logger.LogError("Error in {GetUserAsync}: {message}", nameof(GetUserAsync), ex.Message);
             return Result<UserDto>.Failure("An error occurred while retrieving the user.");
         }
     }
@@ -66,6 +67,7 @@ public class UserService : IUserService
 
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result<UserDetailsDto>.Failure("User not found.");
             }
             var userDetailsDto = new UserDetailsDto
@@ -93,11 +95,13 @@ public class UserService : IUserService
                     Description = p.Description
                 })]
             };
+
+            _logger.LogInfo("Details for user with ID {userId} retrieved successfully.", userId);
             return Result<UserDetailsDto>.Success(userDetailsDto, "User details retrieved successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(GetUserDetailsAsync)}: {ex.Message}");
+            _logger.LogError("Error in {GetUserDetailsAsync}: {message}", nameof(GetUserDetailsAsync), ex.Message);
             return Result<UserDetailsDto>.Failure("An error occurred while retrieving the user details.");
         }
     }
@@ -115,6 +119,7 @@ public class UserService : IUserService
 
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result<UserProfileDto>.Failure("User not found.");
             }
 
@@ -122,6 +127,7 @@ public class UserService : IUserService
 
             if (userProfile == null)
             {
+                _logger.LogWarn("Profile for user with ID {userId} not found.", userId);
                 return Result<UserProfileDto>.Failure("User profile not found.");
             }
 
@@ -134,11 +140,12 @@ public class UserService : IUserService
                 JobTitle = userProfile.JobTitle
             };
 
+            _logger.LogInfo("Profile for user with ID {userId} retrieved successfully.", userId);
             return Result<UserProfileDto>.Success(userProfileDto, "User profile retrieved successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(GetUserProfileAsync)}: {ex.Message}");
+            _logger.LogError("Error in {GetUserProfileAsync}: {message}", nameof(GetUserProfileAsync), ex.Message);
             return Result<UserProfileDto>.Failure("An error occurred while retrieving the user profile.");
         }
     }
@@ -162,11 +169,12 @@ public class UserService : IUserService
                 })
                 .ToList();
 
+            _logger.LogInfo("{count} users retrieved successfully.", userDtos.Count);
             return Result<IEnumerable<UserDto>>.Success(userDtos, "Users retrieved successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(GetAllUsersAsync)}: {ex.Message}");
+            _logger.LogError("Error in {GetAllUsersAsync}: {message}", nameof(GetAllUsersAsync), ex.Message);
             return Result<IEnumerable<UserDto>>.Failure("An error occurred while retrieving users.");
         }
     }
@@ -184,6 +192,7 @@ public class UserService : IUserService
             );
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result<UserDto>.Failure("User not found.");
             }
 
@@ -203,11 +212,12 @@ public class UserService : IUserService
                 AvatarUrl = user.UserProfile?.AvatarUrl
             };
 
+            _logger.LogInfo("User with ID {userId} updated successfully.", userId);
             return Result<UserDto>.Success(userDto, "User updated successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(UpdateUserAsync)}: {ex.Message}");
+            _logger.LogError("Error in {UpdateUserAsync}: {message}", nameof(UpdateUserAsync), ex.Message);
             return Result<UserDto>.Failure($"An error occurred while updating the user. {ex.Message}");
         }
     }
@@ -225,12 +235,14 @@ public class UserService : IUserService
             );
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result<UserProfileDto>.Failure("User not found.");
             }
 
             var userProfile = await _repository.UserProfile.GetByUserIdAsync(userId, cancellationToken);
             if (userProfile == null)
             {
+                _logger.LogWarn("Profile for user with ID {userId} not found.", userId);
                 return Result<UserProfileDto>.Failure("User profile not found.");
             }
 
@@ -244,11 +256,12 @@ public class UserService : IUserService
             _repository.UserProfile.Update(userProfile);
             await _repository.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("Profile for user with ID {userId} updated successfully.", userId);
             return Result<UserProfileDto>.Success(userProfileDto, "User profile updated successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(UpdateUserProfileAsync)}: {ex.Message}");
+            _logger.LogError("Error in {UpdateUserProfileAsync}: {message}", nameof(UpdateUserProfileAsync), ex.Message);
             return Result<UserProfileDto>.Failure("An error occurred while updating the user profile.");
         }
     }
@@ -265,6 +278,7 @@ public class UserService : IUserService
             );
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result.Failure("User not found.");
             }
 
@@ -272,11 +286,12 @@ public class UserService : IUserService
             _repository.User.Update(user);
             await _repository.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("User with ID {userId} deactivated successfully.", userId);
             return Result.Success("User deactivated successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(DeactivateUserAsync)}: {ex.Message}");
+            _logger.LogError("Error in {DeactivateUserAsync}: {message}", nameof(DeactivateUserAsync), ex.Message);
             return Result.Failure("An error occurred while deactivating the user.");
         }
     }
@@ -293,6 +308,7 @@ public class UserService : IUserService
             );
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result.Failure("User not found.");
             }
 
@@ -300,11 +316,12 @@ public class UserService : IUserService
             _repository.User.Update(user);
             await _repository.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("User with ID {userId} activated successfully.", userId);
             return Result.Success("User activated successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(ActivateUserAsync)}: {ex.Message}");
+            _logger.LogError("Error in {ActivateUserAsync}: {message}", nameof(ActivateUserAsync), ex.Message);
             return Result.Failure("An error occurred while activating the user.");
         }
     }
@@ -321,6 +338,7 @@ public class UserService : IUserService
             );
             if (user == null || user.IsDeleted)
             {
+                _logger.LogWarn("User with ID {userId} not found or is deleted.", userId);
                 return Result.Failure("User not found.");
             }
 
@@ -329,11 +347,12 @@ public class UserService : IUserService
             _repository.User.Update(user);
             await _repository.SaveAsync(cancellationToken);
 
+            _logger.LogInfo("User with ID {userId} deleted successfully.", userId);
             return Result.Success("User deleted successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in {nameof(DeleteUserAsync)}: {ex.Message}");
+            _logger.LogError("Error in {DeleteUserAsync}: {message}", nameof(DeleteUserAsync), ex.Message);
             return Result.Failure("An error occurred while deleting the user.");
         }
     }
