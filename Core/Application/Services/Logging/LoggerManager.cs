@@ -1,28 +1,26 @@
 using Application.Interfaces.Logging;
-using NLog;
+using Serilog;
 namespace Application.Services.Logging;
 
 public class LoggerManager : ILoggerManager
 {
-    private static ILogger _logger = LogManager.GetCurrentClassLogger();
-
-    public void LogInfo(string message)
+    public void LogInfo(string messageTemplate, params object[] propertyValues)
     {
-        _logger.Info(message);
+        Log.Information(messageTemplate, propertyValues);
     }
 
-    public void LogWarn(string message)
+    public void LogWarn(string messageTemplate, params object[] propertyValues)
     {
-        _logger.Warn(message);
+        Log.Warning(messageTemplate, propertyValues);
     }
 
-    public void LogDebug(string message)
+    public void LogDebug(string messageTemplate, params object[] propertyValues)
     {
-        _logger.Debug(message);
+        Log.Debug(messageTemplate, propertyValues);
     }
 
-    public void LogError(string message)
+    public void LogError(string messageTemplate, params object[] propertyValues)
     {
-        _logger.Error(message);
+        Log.Error(messageTemplate, propertyValues);
     }
 }
