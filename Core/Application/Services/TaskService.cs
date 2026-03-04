@@ -49,18 +49,18 @@ public class TaskService : ITaskService
 
             if (task is null)
             {
-                _logger.LogWarn($"Task with id: {taskId} not found.");
-                return Result<TaskDto>.Failure($"Task with id: {taskId} not found.");
+                _logger.LogWarn("Task with id: {taskId} not found.", taskId);
+                return Result<TaskDto>.Failure($"Task with ID: {taskId} not found.");
             }
 
             var taskDto = _mapper.Map<TaskDto>(task);
 
-            _logger.LogInfo($"Retrieved task with id: {taskId} successfully.");
+            _logger.LogInfo("Retrieved task with ID: {taskId} successfully.", taskId);
             return Result<TaskDto>.Success(taskDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving task with id: {taskId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving task with ID: {taskId}. Error: {message}", taskId, ex.Message);
             return Result<TaskDto>.Failure("An unexpected error occurred. Please try again later.");
         }
     }
@@ -77,18 +77,19 @@ public class TaskService : ITaskService
 
             if (task is null)
             {
-                _logger.LogWarn($"Task with id: {taskId} not found.");
+                _logger.LogWarn("Task with ID: {taskId} not found.", taskId);
                 return Result<TaskDetailsDto>.Failure($"Task with id: {taskId} not found.");
             }
 
             var taskDetailsDto = _mapper.Map<TaskDetailsDto>(task);
 
-            _logger.LogInfo($"Retrieved task details with id: {taskId} successfully.");
+            _logger.LogInfo("Retrieved details for task with ID: {taskId} successfully.", taskId);
             return Result<TaskDetailsDto>.Success(taskDetailsDto);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving task details with id: {taskId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving task details with id: {taskId}. Error: {message}",
+                                taskId, ex.Message);
             return Result<TaskDetailsDto>.Failure($"An unexpected error occurred. Please try again later. {ex.Message}");
         }
     }
@@ -105,7 +106,7 @@ public class TaskService : ITaskService
 
             if (project is null)
             {
-                _logger.LogWarn($"Project with id: {projectId} not found.");
+                _logger.LogWarn("Project with id: {projectId} not found.", projectId);
                 return Result<IEnumerable<TaskDto>>.Failure($"Project with id: {projectId} not found.");
             }    
 
@@ -115,12 +116,13 @@ public class TaskService : ITaskService
 
             var taskDtos = _mapper.Map<IEnumerable<TaskDto>>(tasks);
 
-            _logger.LogInfo($"Retrieved tasks for project id: {projectId} successfully.");
+            _logger.LogInfo("Retrieved tasks for project with ID: {projectId} successfully.", projectId);
             return Result<IEnumerable<TaskDto>>.Success(taskDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving tasks for project id: {projectId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving tasks for project id: {projectId}. Error: {message}",
+                                projectId, ex.Message);
             return Result<IEnumerable<TaskDto>>.Failure("An unexpected error occurred. Please try again later.");
         }
     }
@@ -137,7 +139,7 @@ public class TaskService : ITaskService
 
             if (user is null)
             {
-                _logger.LogWarn($"User with id: {userId} not found.");
+                _logger.LogWarn("User with ID: {userId} not found.", userId);
                 return Result<IEnumerable<TaskDto>>.Failure($"User with id: {userId} not found.");
             }    
 
@@ -147,12 +149,13 @@ public class TaskService : ITaskService
 
             var taskDtos = _mapper.Map<IEnumerable<TaskDto>>(tasks);
 
-            _logger.LogInfo($"Retrieved tasks for user id: {userId} successfully.");
+            _logger.LogInfo("Retrieved tasks for user with ID: {userId} successfully.", userId);
             return Result<IEnumerable<TaskDto>>.Success(taskDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving tasks for user id: {userId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving tasks for user id: {userId}. Error: {message}",
+                                userId, ex.Message);
             return Result<IEnumerable<TaskDto>>.Failure("An unexpected error occurred. Please try again later.");
         }
     }
@@ -169,9 +172,9 @@ public class TaskService : ITaskService
 
             if (project is null)
             {
-                _logger.LogWarn($"Project with id: {projectId} not found.");
+                _logger.LogWarn("Project with ID: {projectId} not found.", projectId);
                 return Result<IEnumerable<TaskDto>>.Failure($"Project with id: {projectId} not found.");
-            }    
+            }
 
             var tasks = await _repositoryManager.Task.GetOverdueTasksAsync(
                 projectId,
@@ -179,12 +182,13 @@ public class TaskService : ITaskService
 
             var taskDtos = _mapper.Map<IEnumerable<TaskDto>>(tasks);
 
-            _logger.LogInfo($"Retrieved overdue tasks for project id: {projectId} successfully.");
+            _logger.LogInfo("Retrieved overdue tasks for project with ID: {projectId} successfully.", projectId);
             return Result<IEnumerable<TaskDto>>.Success(taskDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving overdue tasks for project id: {projectId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving overdue tasks for project id: {projectId}. Error: {message}",
+                                projectId, ex.Message);
             return Result<IEnumerable<TaskDto>>.Failure("An unexpected error occurred. Please try again later.");
         }
     }
@@ -202,7 +206,7 @@ public class TaskService : ITaskService
 
             if( project is null)
             {
-                _logger.LogWarn($"Project with id: {projectId} not found.");
+                _logger.LogWarn("Project with id: {projectId} not found.", projectId);
                 return Result<IEnumerable<TaskDto>>.Failure($"Project with id: {projectId} not found.");
             }
 
@@ -213,12 +217,14 @@ public class TaskService : ITaskService
 
             var taskDtos = _mapper.Map<IEnumerable<TaskDto>>(tasks);
 
-            _logger.LogInfo($"Tasks in project {project.Name} with status {status} are retrieved successfuly.");
+            _logger.LogInfo("Tasks in project with ID {projectId} with status {status} are retrieved successfuly.",
+                                project.Id, status!);
             return Result<IEnumerable<TaskDto>>.Success(taskDtos);     
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving tasks by status: {status} for project id: {projectId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving tasks by status: {status} for project ID: {projectId}. Error: {message}",
+                                status ?? "Pending", projectId, ex.Message);
             return Result<IEnumerable<TaskDto>>.Failure("An unexpected error occurred. Please try again later");
         }
     }
@@ -236,7 +242,7 @@ public class TaskService : ITaskService
 
             if( project is null)
             {
-                _logger.LogWarn($"Project with id: {projectId} not found.");
+                _logger.LogWarn("Project with ID: {projectId} not found.", projectId);
                 return Result<IEnumerable<TaskDto>>.Failure($"Project with id: {projectId} not found.");
             }
 
@@ -247,12 +253,14 @@ public class TaskService : ITaskService
 
             var taskDtos = _mapper.Map<IEnumerable<TaskDto>>(tasks);
 
-            _logger.LogInfo($"Tasks in project {project.Name} with priority {priority} are retrieved successfuly.");
+            _logger.LogInfo("Tasks in project with ID: {projectId} with priority {priority} are retrieved successfuly.",
+                                projectId, priority ?? "Urgent");
             return Result<IEnumerable<TaskDto>>.Success(taskDtos);     
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving tasks by priority: {priority} for project id: {projectId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving tasks by priority: {priority} for project id: {projectId}. Error: {message}",
+                                priority ?? "Urgent", projectId, ex.Message);
             return Result<IEnumerable<TaskDto>>.Failure("An unexpected error occurred. Please try again later");
         }
     }
@@ -269,7 +277,7 @@ public class TaskService : ITaskService
 
             if (parentTask is null)
             {
-                _logger.LogWarn($"Parent task with id: {parentTaskId} not found.");
+                _logger.LogWarn("Parent task with id: {parentTaskId} not found.", parentTaskId);
                 return Result<IEnumerable<TaskDto>>.Failure($"Parent task with id: {parentTaskId} not found.");
             }    
 
@@ -279,12 +287,13 @@ public class TaskService : ITaskService
 
             var subtaskDtos = _mapper.Map<IEnumerable<TaskDto>>(subtasks);
 
-            _logger.LogInfo($"Retrieved subtasks for parent task id: {parentTaskId} successfully.");
+            _logger.LogInfo("Retrieved subtasks for parent task id: {parentTaskId} successfully.", parentTaskId);
             return Result<IEnumerable<TaskDto>>.Success(subtaskDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"An error occurred while retrieving subtasks for parent task id: {parentTaskId}. Error: {ex.Message}");
+            _logger.LogError("An error occurred while retrieving subtasks for parent task with ID: {parentTaskId}. Error: {message}",
+                                parentTaskId, ex.Message);
             return Result<IEnumerable<TaskDto>>.Failure("An unexpected error occurred. Please try again later.");
         }
     }
@@ -303,7 +312,7 @@ public class TaskService : ITaskService
 
         var taskDto = _mapper.Map<TaskDto>(task);
 
-        _logger.LogInfo($"Created task with id: {task.Id} successfully.");
+        _logger.LogInfo("Task with ID: {taskId} created successfully.", task.Id);
         return Result<TaskDto>.Success(taskDto);
     }
 
@@ -318,7 +327,7 @@ public class TaskService : ITaskService
 
         if (task is null)
         {
-            _logger.LogWarn($"Task with id: {taskId} not found.");
+            _logger.LogWarn("Task with id: {taskId} not found.", taskId);
             return Result<TaskDto>.Failure($"Task with id: {taskId} not found.");
         }
 
@@ -333,7 +342,7 @@ public class TaskService : ITaskService
 
         var taskDto =  _mapper.Map<TaskDto>(task);
 
-        _logger.LogInfo($"Updated task with id: {taskId} successfully.");
+        _logger.LogInfo("Task with ID: {taskId} updated successfully.", taskId);
         return Result<TaskDto>.Success(taskDto);
     }
 
@@ -347,7 +356,7 @@ public class TaskService : ITaskService
 
         if (task is null)
         {
-            _logger.LogWarn($"Task with id: {taskId} not found.");
+            _logger.LogWarn("Task with ID: {taskId} not found.", taskId);
             return Result.Failure($"Task with id: {taskId} not found.");
         }
 
@@ -356,7 +365,7 @@ public class TaskService : ITaskService
 
         await _repositoryManager.SaveAsync(cancellationToken);
 
-        _logger.LogInfo($"Deleted task with id: {taskId} successfully.");
+        _logger.LogInfo("Task with ID: {taskId} deleted successfully.", taskId);
         return Result.Success();
     }
 
@@ -371,8 +380,8 @@ public class TaskService : ITaskService
 
         if (task is null)
         {
-            _logger.LogWarn($"Task with id: {taskId} not found.");
-            return Result.Failure($"Task with id: {taskId} not found.");
+            _logger.LogWarn("Task with ID: {taskId} not found.", taskId);
+            return Result.Failure($"Task with ID: {taskId} not found.");
         }
 
         task.AssignedToId = userId;
@@ -402,6 +411,7 @@ public class TaskService : ITaskService
                 cancellationToken);
         }
 
+        _logger.LogInfo("Task with ID: {taskId} assigned to user with ID: {userId} successfully.", taskId, userId);
         return Result.Success("Task assigned successfully.");
     }
 
@@ -416,8 +426,8 @@ public class TaskService : ITaskService
 
         if (parentTask is null)
         {
-            _logger.LogWarn($"Parent task with id: {parentTaskId} not found.");
-            return Result<TaskDetailsDto>.Failure($"Parent task with id: {parentTaskId} not found.");
+            _logger.LogWarn("Parent task with ID: {parentTaskId} not found.", parentTaskId);
+            return Result<TaskDetailsDto>.Failure($"Parent task with ID: {parentTaskId} not found.");
         }
 
         var subtask = _mapper.Map<Task>(createTaskDto);
@@ -435,7 +445,8 @@ public class TaskService : ITaskService
 
         var taskDetailsDto = _mapper.Map<TaskDetailsDto>(updatedParentTask);
 
-        _logger.LogInfo($"Added subtask with id: {subtask.Id} to parent task id: {parentTaskId} successfully.");
+        _logger.LogInfo("subtask with ID: {subtaskId} added  to parent task ID: {parentTaskId} successfully.", subtask.Id,
+                            parentTaskId);
         return Result<TaskDetailsDto>.Success(taskDetailsDto);
     }
 
@@ -450,8 +461,8 @@ public class TaskService : ITaskService
 
         if (task is null)
         {
-            _logger.LogWarn($"Task with id: {taskId} not found.");
-            return Result<TaskDetailsDto>.Failure($"Task with id: {taskId} not found.");
+            _logger.LogWarn("Task with ID: {taskId} not found.", taskId);
+            return Result<TaskDetailsDto>.Failure($"Task with ID: {taskId} not found.");
         }
 
         var attachment = _mapper.Map<Attachment>(createAttachmentDto);
@@ -469,7 +480,8 @@ public class TaskService : ITaskService
 
         var taskDetailsDto = _mapper.Map<TaskDetailsDto>(updatedTask);
 
-        _logger.LogInfo($"Added attachment with id: {attachment.Id} to task id: {taskId} successfully.");
+        _logger.LogInfo("Attachment with ID: {attachmentId} added to task with ID: {taskId} successfully.", attachment.Id,
+                            taskId);
         return Result<TaskDetailsDto>.Success(taskDetailsDto);
     }
 
@@ -484,8 +496,8 @@ public class TaskService : ITaskService
 
         if (task is null)
         {
-            _logger.LogWarn($"Task with id: {taskId} not found.");
-            return Result.Failure($"Task with id: {taskId} not found.");
+            _logger.LogWarn("Task with ID: {taskId} not found.", taskId);
+            return Result.Failure($"Task with ID: {taskId} not found.");
         }
 
         var attachment = await _repositoryManager.Attachment.GetByIdAsync(
@@ -494,15 +506,15 @@ public class TaskService : ITaskService
 
         if (attachment is null || attachment.TaskId != taskId)
         {
-            _logger.LogWarn($"Attachment with id: {attachmentId} not found for task id: {taskId}.");
-            return Result.Failure($"Attachment with id: {attachmentId} not found for task id: {taskId}.");
+            _logger.LogWarn("Attachment with ID: {attachmentId} not found for task ID: {taskId}.", attachmentId, taskId);
+            return Result.Failure($"Attachment with ID: {attachmentId} not found for task ID: {taskId}.");
         }
 
          _repositoryManager.Attachment.Remove(
             attachment);
         await _repositoryManager.SaveAsync(cancellationToken);
 
-        _logger.LogInfo($"Removed attachment with id: {attachmentId} from task id: {taskId} successfully.");
+        _logger.LogInfo("Removed attachment with ID: {attachmentId} from task ID: {taskId} successfully.", attachmentId, taskId);
         return Result.Success();
     }
 
@@ -517,8 +529,8 @@ public class TaskService : ITaskService
         
         if (task is null)
         {
-            _logger.LogWarn($"Task with id: {taskId} not found.");
-            return Result<TaskDetailsDto>.Failure($"Task with id: {taskId} not found.");
+            _logger.LogWarn("Task with ID: {taskId} not found.", taskId);
+            return Result<TaskDetailsDto>.Failure($"Task with ID: {taskId} not found.");
         }
 
         var comment = _mapper.Map<Comment>(createCommentDto);
@@ -536,7 +548,7 @@ public class TaskService : ITaskService
 
         var taskDetailsDto = _mapper.Map<TaskDetailsDto>(updatedTask);
 
-        _logger.LogInfo($"Added comment with id: {comment.Id} to task id: {taskId} successfully.");
+        _logger.LogInfo("Comment with ID: {commentId} added to task with ID: {taskId} successfully.", comment.Id, taskId);
         return Result<TaskDetailsDto>.Success(taskDetailsDto);
     }
 
@@ -551,8 +563,8 @@ public class TaskService : ITaskService
 
         if (task is null)
         {
-            _logger.LogWarn($"Task with id: {taskId} not found.");
-            return Result.Failure($"Task with id: {taskId} not found.");
+            _logger.LogWarn("Task with ID: {taskId} not found.", taskId);
+            return Result.Failure($"Task with ID: {taskId} not found.");
         }
 
         var comment = await _repositoryManager.Comment.GetByIdAsync(
@@ -561,15 +573,15 @@ public class TaskService : ITaskService
 
         if (comment is null || comment.TaskId != taskId)
         {
-            _logger.LogWarn($"Comment with id: {commentId} not found for task id: {taskId}.");
-            return Result.Failure($"Comment with id: {commentId} not found for task id: {taskId}.");
+            _logger.LogWarn("Comment with ID: {commentId} not found for task with ID: {taskId}.", commentId, taskId);
+            return Result.Failure($"Comment with ID: {commentId} not found for task with ID: {taskId}.");
         }
 
          _repositoryManager.Comment.Remove(
             comment);
         await _repositoryManager.SaveAsync(cancellationToken);
 
-        _logger.LogInfo($"Removed comment with id: {commentId} from task id: {taskId} successfully.");
+        _logger.LogInfo("Comment with ID: {commentId} removed from task with ID: {taskId} successfully.", commentId, taskId);
         return Result.Success();
     }
 }

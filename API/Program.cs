@@ -1,6 +1,7 @@
 using API.Extensions;
 using Application.Services;
 using DotNetEnv;
+using Serilog;
 
 Env.Load();
 
@@ -14,6 +15,9 @@ builder.Services.AddAutoMapper( assemblies =>
     assemblies.AddMaps(typeof(TaskService).Assembly);
     assemblies.AddMaps(typeof(Program).Assembly);
 });
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

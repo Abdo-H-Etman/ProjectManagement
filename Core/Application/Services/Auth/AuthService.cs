@@ -1,4 +1,3 @@
-
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -58,17 +57,20 @@ public class AuthenticationService : IAuthenticationService
             var existingUser = await _userManager.FindByEmailAsync(createUserDto.Email);
             if (existingUser != null)
             {
+                _logger.LogWarn("Registration attempt failed: Email {email} is already registered", createUserDto.Email);
                 return Result<AuthResponseDto>.Failure("Email is already registered.");
             }
 
             existingUser = await _userManager.FindByNameAsync(createUserDto.UserName);
             if (existingUser != null)
             {
+                _logger.LogWarn("Registration attempt failed: Username {username} is already taken", createUserDto.UserName);
                 return Result<AuthResponseDto>.Failure("Username is already taken.");
             }
 
             if (createUserDto.Password != createUserDto.ConfirmPassword)
             {
+                _logger.LogError("Password and confirm password don't match for email {email}", createUserDto.Email);
                 return Result<AuthResponseDto>.Failure("Passwords do not match.");
             }
 
@@ -84,12 +86,15 @@ public class AuthenticationService : IAuthenticationService
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
+                _logger.LogError("Failed to create user with email {email}: {errors}", createUserDto.Email!,
+                                string.Join(';', errors));
                 return Result<AuthResponseDto>.Failure($"User creation failed.", errors);
             }
 
             var createdUser = await _userManager.FindByEmailAsync(createUserDto.Email);
             if (createdUser == null)
             {
+                _logger.LogError("User with email {email} was created but could not be retrieved from database.", createUserDto.Email);
                 return Result<AuthResponseDto>.Failure("User was created but could not be retrieved from database.");
             }
 
@@ -105,12 +110,12 @@ public class AuthenticationService : IAuthenticationService
                 newUser.Email,
                 $"{newUser.FirstName} {newUser.LastName}",
                 cancellationToken);
-            _logger.LogInfo("User registered successfully.");
+            _logger.LogInfo("User with Id {userId} registered successfully.", createdUser.Id);
             return Result<AuthResponseDto>.Success(authResponse, "User registered successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during user registration: {ex.Message}");
+            _logger.LogError("Error during user registration: {message}", ex.Message);
             return Result<AuthResponseDto>.Failure("Registration failed.");
         }
     }
@@ -127,32 +132,36 @@ public class AuthenticationService : IAuthenticationService
                        ?? await _userManager.FindByEmailAsync(loginDto.Identifier);
             if (user == null)
             {
+                _logger.LogWarn("Login attempt failed: User with identifier {identifier} not found", loginDto.Identifier);
                 return Result<AuthResponseDto>.Failure("Invalid credentials.");
             }
 
             if (!user.IsActive)
             {
+                _logger.LogWarn("Login attempt failed: User with identifier {identifier} is inactive", loginDto.Identifier);
                 return Result<AuthResponseDto>.Failure("User account is inactive.");
             }
 
             var signInResult = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
             if (signInResult.IsLockedOut)
             {
+                _logger.LogWarn("Login attempt failed: User account is locked out for user with Id {userId}", user.Id);
                 return Result<AuthResponseDto>.Failure("User account is locked out. please try again later.");
             }
             if (!signInResult.Succeeded)
             {
+                _logger.LogWarn("Login attempt failed: User with identifier {identifier} not found", loginDto.Identifier);
                 return Result<AuthResponseDto>.Failure("Invalid credentials.");
             }
 
             var authResponse = await GenerateAuthResponseDtoAsync(user, ipAddress, userAgent, cancellationToken);
             user.LastLoginAt = DateTime.UtcNow;
-            _logger.LogInfo("User logged in successfully.");
+            _logger.LogInfo("User with ID {userId} logged in successfully.", user.Id);
             return Result<AuthResponseDto>.Success(authResponse, "User logged in successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during user login: {ex.Message}");
+            _logger.LogError("Error during user login: {message} ", ex.Message);
             return Result<AuthResponseDto>.Failure("Login failed.");
         }
     }
@@ -168,12 +177,14 @@ public class AuthenticationService : IAuthenticationService
             var principal = GetPrincipalFromExpiredToken(tokenDto.AccessToken);
             if (principal == null)
             {
+                _logger.LogWarn("Invalid access token during refresh attempt.");
                 return Result<AuthResponseDto>.Failure("Invalid access token.");
             }
 
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
+                _logger.LogWarn("Invalid token not claims for user ID: {userId}", userIdClaim?.Value!);
                 return Result<AuthResponseDto>.Failure("Invalid token claims.");
             }
 
@@ -183,12 +194,14 @@ public class AuthenticationService : IAuthenticationService
 
             if (refreshToken == null)
             {
+                _logger.LogWarn("Refresh token not found or expired for user ID: {userId}", userId);
                 return Result<AuthResponseDto>.Failure("Invalid or expired refresh token.");
             }
 
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null || !user.IsActive)
             {
+                _logger.LogWarn("User with ID {userId} not found or inactive during token refresh.", userId);
                 return Result<AuthResponseDto>.Failure("User not found or inactive.");
             }
 
@@ -201,12 +214,12 @@ public class AuthenticationService : IAuthenticationService
             _repositoryManager.RefreshToken.Update(refreshToken);
             await _repositoryManager.SaveAsync(cancellationToken);
 
-            _logger.LogInfo($"Token refreshed successfully for user: {userId}.");
+            _logger.LogInfo("Token refreshed successfully for user: {userId}.", userId);
             return Result<AuthResponseDto>.Success(authResponse, "Token refreshed successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during token refresh: {ex.Message}");
+            _logger.LogError("Error during token refresh: {message}", ex.Message);
             return Result<AuthResponseDto>.Failure("Token refresh failed.");
         }
     }
@@ -233,12 +246,12 @@ public class AuthenticationService : IAuthenticationService
             _repositoryManager.RefreshToken.Update(token);
             await _repositoryManager.SaveAsync(cancellationToken);
 
-            _logger.LogInfo($"Refresh token revoked successfully for user: {token.UserId}.");
+            _logger.LogInfo("Refresh token revoked successfully for user: {UserId}.", token.UserId);
             return Result.Success("Refresh token revoked successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during token revocation: {ex.Message}");
+            _logger.LogError("Error during token revocation: {message}", ex.Message);
             return Result.Failure("Token revocation failed.");
         }
     }
@@ -272,12 +285,12 @@ public class AuthenticationService : IAuthenticationService
                 await _userManager.UpdateSecurityStampAsync(user);
             }
 
-            _logger.LogInfo($"User {userId} logged out successfully.");
+            _logger.LogInfo("User {userId} logged out successfully.", userId);
             return Result.Success("User logged out successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during user logout: {ex.Message}");
+            _logger.LogError("Error during user logout: {message}", ex.Message);
             return Result.Failure($"Logout failed. {ex.Message}");
         }
     }
@@ -291,12 +304,14 @@ public class AuthenticationService : IAuthenticationService
         {
             if (changePasswordDto.NewPassword != changePasswordDto.ConfirmNewPassword)
             {
+                _logger.LogError("New password and confirm new password don't match for user {userId}", userId);
                 return Result.Failure("passwords do not match.");
             }
 
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
             {
+                _logger.LogError("User with Id {userId} not found for password change.", userId);
                 return Result.Failure("User not found.");
             }
 
@@ -304,15 +319,18 @@ public class AuthenticationService : IAuthenticationService
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
+
+                _logger.LogError("Failed to change password for user {email}: {errors}",
+                        user.Email!, string.Join(';', errors));
                 return Result.Failure($"Password change failed.", errors);
             }
 
-            _logger.LogInfo($"Password changed successfully for user: {userId}.");
+            _logger.LogInfo("Password changed successfully for user: {userId}", userId);
             return Result.Success("Password changed successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during password change: {ex.Message}");
+            _logger.LogError("Error during password change: {message}", ex.Message);
             return Result.Failure("Password change failed.");
         }
     }
@@ -326,6 +344,7 @@ public class AuthenticationService : IAuthenticationService
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
+                _logger.LogWarn("Password reset requested for non-existent email: {email}", email);
                 return Result.Failure("If the email is registered, password reset instructions will be sent.");
             }
 
@@ -341,16 +360,16 @@ public class AuthenticationService : IAuthenticationService
 
             if (!emailResult.IsSuccess)
             {
-                _logger.LogError($"Failed to send password reset email to {user.Email}: {string.Join(';', emailResult.Errors)}");
+                _logger.LogError("Failed to send password reset email to {email}: {errors}", user.Email!, string.Join(';', emailResult.Errors));
                 return Result.Failure("Failed to send password reset email.", emailResult.Errors);
             }
 
-            _logger.LogInfo($"Password reset requested for user: {user.Id}.");
+            _logger.LogInfo("Password reset requested for user: {userId}", user.Id);
             return Result.Success("Password reset instructions sent to email.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during password reset process: {ex.Message}");
+            _logger.LogError("Error during password reset process: {message}", ex.Message);
             return Result.Failure("An error occurred while processing your request.");
         }
     }
@@ -363,12 +382,14 @@ public class AuthenticationService : IAuthenticationService
         {
             if (resetPasswordDto.NewPassword != resetPasswordDto.ConfirmNewPassword)
             {
+                _logger.LogError("New password and confirm new password do not match for email {email}", resetPasswordDto.Email);
                 return Result.Failure("Passwords do not match.");
             }
 
             var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
             if (user == null)
             {
+                _logger.LogError("Password reset failed: User with email {email} not found.", resetPasswordDto.Email);
                 return Result.Failure("Invalid password reset request.");
             }
 
@@ -376,15 +397,19 @@ public class AuthenticationService : IAuthenticationService
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
+
+                _logger.LogError("Password reset failed for user with email {email}: {errors}", resetPasswordDto.Email,
+                                    string.Join(';', errors));
                 return Result.Failure("Password reset failed.", errors);
             }
 
-            _logger.LogInfo($"Password reset successfully for: {resetPasswordDto.Email}.");
+            _logger.LogInfo("Password reset successfully for: {email}", resetPasswordDto.Email);
             return Result.Success("Password reset successfully.");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error during password reset: {ex.Message}");
+            _logger.LogError("Error during password reset for user with email {email}: {message}", resetPasswordDto.Email,
+                                        ex.Message);
             return Result.Failure("Password reset failed.");
         }
     }
@@ -469,8 +494,8 @@ public class AuthenticationService : IAuthenticationService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error generating refresh token: {ex.Message}");
-            _logger.LogError($"Stack trace: {ex.StackTrace}");
+            _logger.LogError("Error generating refresh token: {message}", ex.Message);
+            _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace!);
             throw;
         }
     }
