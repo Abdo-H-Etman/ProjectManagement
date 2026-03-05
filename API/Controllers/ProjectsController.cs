@@ -41,11 +41,11 @@ public class ProjectsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("user/{userId:guid}")]
+    [HttpGet("user")]
     [Authorize]
-    public async Task<IActionResult> GetUserProjects(Guid userId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetUserProjects(CancellationToken cancellationToken)
     {
-        var result = await _projectService.GetUserProjectsAsync(userId, cancellationToken);
+        var result = await _projectService.GetUserProjectsAsync(cancellationToken);
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -53,11 +53,11 @@ public class ProjectsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("archived/{userId:guid}")]
+    [HttpGet("archived")]
     [Authorize]
-    public async Task<IActionResult> GetArchivedProjects(Guid userId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetArchivedProjects(CancellationToken cancellationToken)
     {
-        var result = await _projectService.GetArchivedProjectsAsync(userId, cancellationToken);
+        var result = await _projectService.GetArchivedProjectsAsync(cancellationToken);
 
         if (!result.IsSuccess)
             return BadRequest(result);
@@ -163,12 +163,10 @@ public class ProjectsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> AcceptProjectInvitation(
         [FromQuery] string token,
-        [FromQuery] Guid inviterId,
         CancellationToken cancellationToken)
     {
         var result = await _projectService.AcceptProjectInvitationAsync(
             token,
-            inviterId,
             cancellationToken);
 
         if (!result.IsSuccess)

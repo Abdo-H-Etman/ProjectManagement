@@ -17,10 +17,8 @@ public interface IProjectService
         CancellationToken cancellationToken = default);    
     Task<Result<IEnumerable<ProjectListDto>>> GetAllProjectsAsync(CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<ProjectListDto>>> GetUserProjectsAsync(
-        Guid userId,
         CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<ProjectListDto>>> GetArchivedProjectsAsync(
-        Guid userId,
         CancellationToken cancellationToken = default);
     Task<Result<ProjectListDto>> CreateProjectAsync(
         CreateProjectDto createProjectDto,
@@ -37,7 +35,6 @@ public interface IProjectService
         CancellationToken cancellationToken = default);
     Task<Result<bool>> IsUserProjectMemberAsync(
         Guid projectId,
-        Guid userId,
         CancellationToken cancellationToken = default);
     Task<Result<ProjectStatistics>> GetProjectStatisticsAsync(
         Guid projectId,
@@ -48,7 +45,6 @@ public interface IProjectService
         CancellationToken cancellationToken = default);
     Task<Result> AcceptProjectInvitationAsync(
         string token,
-        Guid inviterId,
         CancellationToken cancellationToken = default);    
     Task<Result> ArchiveProjectAsync(
         Guid projectId,

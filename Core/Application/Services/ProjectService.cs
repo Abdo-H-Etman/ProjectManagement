@@ -122,7 +122,7 @@ public class ProjectService : IProjectService
             }
 
             var currentUserId = _currentUserService.UserId;
-            var isProjectMember = await IsUserProjectMemberAsync(projectId, currentUserId, cancellationToken);
+            var isProjectMember = await IsUserProjectMemberAsync(projectId, cancellationToken);
             if (!isProjectMember.IsSuccess)
             {
                 _logger.LogError("Error User with ID {userId} is not a member of project ID {projectId}",
@@ -187,15 +187,15 @@ public class ProjectService : IProjectService
     }
 
     public async Task<Result<IEnumerable<ProjectListDto>>> GetUserProjectsAsync(
-        Guid userId,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var user = await _repositoryManager.User.GetByIdAsync(userId, cancellationToken);
-            if (user == null)
+            var userId = _currentUserService.UserId;
+            if (userId == Guid.Empty)
             {
-                return Result<IEnumerable<ProjectListDto>>.Failure("User not found.");
+                _logger.LogError("User with Id {userId} is not authenticated or has an invalid ID.", userId);
+                return Result<IEnumerable<ProjectListDto>>.Failure("User is not authenticated or user ID is invalid.");
             }
 
             var projects = await _repositoryManager.Project.GetUserProjectsAsync(userId, cancellationToken);
@@ -335,15 +335,15 @@ public class ProjectService : IProjectService
     }
 
     public async Task<Result<IEnumerable<ProjectListDto>>> GetArchivedProjectsAsync(
-        Guid userId,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var user = await _repositoryManager.User.GetByIdAsync(userId, cancellationToken);
-            if (user == null)
+            var userId = _currentUserService.UserId;
+            if (userId == Guid.Empty)
             {
-                return Result<IEnumerable<ProjectListDto>>.Failure("User not found.");
+                _logger.LogError("User with Id {userId} is not authenticated or has an invalid ID.", userId);
+                return Result<IEnumerable<ProjectListDto>>.Failure("User is not authenticated or user ID is invalid.");
             }
 
             var projects = await _repositoryManager.Project.GetArchivedProjectsAsync(userId, cancellationToken);
@@ -488,11 +488,16 @@ public class ProjectService : IProjectService
 
     public async Task<Result<bool>> IsUserProjectMemberAsync(
         Guid projectId,
-        Guid userId,
         CancellationToken cancellationToken = default)
     {
         try
         {
+            var userId = _currentUserService.UserId;
+            if (userId == Guid.Empty)
+            {
+                _logger.LogError("User with Id {userId} is not authenticated or has an invalid ID.", userId);
+                return Result<bool>.Failure("User is not authenticated or user ID is invalid.");
+            }
             var isMember = await _repositoryManager.Project.IsUserProjectMemberAsync(projectId, userId, cancellationToken);
             return Result<bool>.Success(isMember);
         }
@@ -553,7 +558,6 @@ public class ProjectService : IProjectService
     }
     public async Task<Result> AcceptProjectInvitationAsync(
         string token,
-        Guid inviterId,
         CancellationToken cancellationToken = default)
     {
         try
@@ -569,7 +573,7 @@ public class ProjectService : IProjectService
 
             var projectMember = new ProjectMember
             {
-                InvitedById = inviterId,
+                InvitedById = invitation.InvitedById,
                 ProjectId = invitation.ProjectId,
                 UserId = userId,
                 Role = invitation.Role,
@@ -585,7 +589,7 @@ public class ProjectService : IProjectService
             await _repositoryManager.SaveAsync(cancellationToken);
 
             _logger.LogInfo("User with ID {userId} accepted invitation to project ID {projectId} from inviter ID {inviterId}",
-                userId, invitation.ProjectId, inviterId);
+                userId, invitation.ProjectId, invitation.InvitedById);
             return Result.Success("Invitation accepted successfully.");
         }
         catch (Exception ex)
